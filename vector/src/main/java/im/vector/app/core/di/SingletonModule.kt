@@ -29,7 +29,8 @@ import dagger.hilt.components.SingletonComponent
 import im.vector.app.BuildConfig
 import im.vector.app.EmojiCompatWrapper
 import im.vector.app.EmojiSpanify
-import im.vector.app.config.analyticsConfig
+import im.vector.app.config.Analytics
+import im.vector.app.config.Config
 import im.vector.app.core.dispatchers.CoroutineDispatchers
 import im.vector.app.core.error.DefaultErrorFormatter
 import im.vector.app.core.error.ErrorFormatter
@@ -190,7 +191,19 @@ object VectorStaticModule {
 
     @Provides
     fun providesAnalyticsConfig(): AnalyticsConfig {
-        return analyticsConfig
+        val config: Analytics = when (BuildConfig.DEBUG) {
+            true -> Config.DEBUG_ANALYTICS_CONFIG
+            false -> Config.RELEASE_ANALYTICS_CONFIG
+        }
+        return when (config) {
+            Analytics.Disabled -> AnalyticsConfig(isEnabled = false, "", "", "")
+            is Analytics.PostHog -> AnalyticsConfig(
+                    isEnabled = true,
+                    postHogHost = config.postHogHost,
+                    postHogApiKey = config.postHogApiKey,
+                    policyLink = config.policyLink
+            )
+        }
     }
 
     @Provides
