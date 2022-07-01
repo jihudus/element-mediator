@@ -228,9 +228,6 @@ android {
             applicationIdSuffix ".debug"
             resValue "string", "app_name", "Element dbg"
 
-            // Set to true if you want to enable strict mode in debug
-            buildConfigField "boolean", "ENABLE_STRICT_MODE_LOGS", "false"
-
             signingConfig signingConfigs.debug
 
             if (project.hasProperty("coverage")) {
@@ -240,8 +237,6 @@ android {
 
         release {
             resValue "string", "app_name", "Element"
-
-            buildConfigField "boolean", "ENABLE_STRICT_MODE_LOGS", "false"
 
             postprocessing {
                 removeUnusedCode true
