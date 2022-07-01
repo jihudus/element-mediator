@@ -192,28 +192,6 @@ object VectorStaticModule {
     fun providesPhoneNumberUtil(): PhoneNumberUtil = PhoneNumberUtil.getInstance()
 
     @Provides
-    fun providesAnalyticsConfig(): AnalyticsConfig {
-        val config: Analytics = when (BuildConfig.DEBUG) {
-            true -> Config.DEBUG_ANALYTICS_CONFIG
-            false -> Config.RELEASE_ANALYTICS_CONFIG
-        }
-        return when (config) {
-            Analytics.Disabled -> AnalyticsConfig(isEnabled = false, "", "", "")
-            is Analytics.PostHog -> AnalyticsConfig(
-                    isEnabled = true,
-                    postHogHost = config.postHogHost,
-                    postHogApiKey = config.postHogApiKey,
-                    policyLink = config.policyLink
-            )
-        }
-    }
-
-    @Provides
-    fun providesVoiceMessageConfig() = VoiceMessageConfig(
-            lengthLimitMs = Config.VOICE_MESSAGE_LIMIT_MS
-    )
-
-    @Provides
     @Singleton
     fun providesBuildMeta() = BuildMeta(
             isDebug = BuildConfig.DEBUG,
