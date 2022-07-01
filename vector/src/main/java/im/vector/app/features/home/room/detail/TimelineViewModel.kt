@@ -34,6 +34,7 @@ import im.vector.app.core.di.MavericksAssistedViewModelFactory
 import im.vector.app.core.di.hiltMavericksViewModelFactory
 import im.vector.app.core.mvrx.runCatchingToAsync
 import im.vector.app.core.platform.VectorViewModel
+import im.vector.app.core.resources.BuildMeta
 import im.vector.app.core.resources.StringProvider
 import im.vector.app.core.utils.BehaviorDataSource
 import im.vector.app.features.analytics.AnalyticsTracker
@@ -138,6 +139,7 @@ class TimelineViewModel @AssistedInject constructor(
         private val locationSharingServiceConnection: LocationSharingServiceConnection,
         private val stopLiveLocationShareUseCase: StopLiveLocationShareUseCase,
         private val cryptoConfig: CryptoConfig,
+        buildMeta: BuildMeta,
         timelineFactory: TimelineFactory,
         appStateHandler: AppStateHandler,
 ) : VectorViewModel<RoomDetailViewState, RoomDetailAction, RoomDetailViewEvents>(initialState),
@@ -151,7 +153,7 @@ class TimelineViewModel @AssistedInject constructor(
     val timeline = timelineFactory.createTimeline(viewModelScope, room, eventId, initialState.rootThreadEventId)
 
     // Same lifecycle than the ViewModel (survive to screen rotation)
-    val previewUrlRetriever = PreviewUrlRetriever(session, viewModelScope)
+    val previewUrlRetriever = PreviewUrlRetriever(session, viewModelScope, buildMeta)
 
     // Slot to keep a pending action during permission request
     var pendingAction: RoomDetailAction? = null

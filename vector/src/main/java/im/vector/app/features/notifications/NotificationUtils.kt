@@ -49,6 +49,7 @@ import im.vector.app.BuildConfig
 import im.vector.app.R
 import im.vector.app.core.extensions.createIgnoredUri
 import im.vector.app.core.platform.PendingIntentCompat
+import im.vector.app.core.resources.BuildMeta
 import im.vector.app.core.resources.StringProvider
 import im.vector.app.core.services.CallAndroidService
 import im.vector.app.core.time.Clock
@@ -78,6 +79,7 @@ class NotificationUtils @Inject constructor(
         private val stringProvider: StringProvider,
         private val vectorPreferences: VectorPreferences,
         private val clock: Clock,
+        private val buildMeta: BuildMeta,
 ) {
 
     companion object {

@@ -66,6 +66,7 @@ import im.vector.app.core.extensions.restart
 import im.vector.app.core.extensions.setTextOrHide
 import im.vector.app.core.extensions.singletonEntryPoint
 import im.vector.app.core.extensions.toMvRxBundle
+import im.vector.app.core.resources.BuildMeta
 import im.vector.app.core.utils.ToolbarConfig
 import im.vector.app.core.utils.toast
 import im.vector.app.features.MainActivity
@@ -152,8 +153,8 @@ abstract class VectorBaseActivity<VB : ViewBinding> : AppCompatActivity(), Maver
     protected lateinit var bugReporter: BugReporter
     private lateinit var pinLocker: PinLocker
 
-    @Inject
-    lateinit var rageShake: RageShake
+    @Inject lateinit var rageShake: RageShake
+    @Inject lateinit var buildMeta: BuildMeta
     lateinit var navigator: Navigator
         private set
     private lateinit var fragmentFactory: FragmentFactory
@@ -401,7 +402,7 @@ abstract class VectorBaseActivity<VB : ViewBinding> : AppCompatActivity(), Maver
         }
         DebugReceiver
                 .getIntentFilter(this)
-                .takeIf { BuildConfig.DEBUG }
+                .takeIf { buildMeta.isDebug }
                 ?.let {
                     debugReceiver = DebugReceiver()
                     registerReceiver(debugReceiver, it)
