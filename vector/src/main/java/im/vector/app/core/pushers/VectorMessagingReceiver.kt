@@ -31,6 +31,7 @@ import im.vector.app.core.network.WifiDetector
 import im.vector.app.core.pushers.model.PushData
 import im.vector.app.core.services.GuardServiceStarter
 import im.vector.app.features.notifications.NotifiableEventResolver
+import im.vector.app.features.notifications.NotificationActionIds
 import im.vector.app.features.notifications.NotificationDrawerManager
 import im.vector.app.features.notifications.NotificationUtils
 import im.vector.app.features.settings.BackgroundSyncMode
@@ -67,6 +68,7 @@ class VectorMessagingReceiver : MessagingReceiver() {
     @Inject lateinit var unifiedPushHelper: UnifiedPushHelper
     @Inject lateinit var unifiedPushStore: UnifiedPushStore
     @Inject lateinit var pushParser: PushParser
+    @Inject lateinit var actionIds: NotificationActionIds
 
     private val coroutineScope = CoroutineScope(SupervisorJob())
 
@@ -99,7 +101,7 @@ class VectorMessagingReceiver : MessagingReceiver() {
 
         // Diagnostic Push
         if (pushData.eventId == PushersManager.TEST_EVENT_ID) {
-            val intent = Intent(NotificationUtils.PUSH_ACTION)
+            val intent = Intent(actionIds.PUSH_ACTION)
             LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
             return
         }
