@@ -29,6 +29,7 @@ import im.vector.app.BuildConfig
 import im.vector.app.core.di.ActiveSessionHolder
 import im.vector.app.core.network.WifiDetector
 import im.vector.app.core.pushers.model.PushData
+import im.vector.app.core.resources.BuildMeta
 import im.vector.app.core.services.GuardServiceStarter
 import im.vector.app.features.notifications.NotifiableEventResolver
 import im.vector.app.features.notifications.NotificationActionIds
@@ -69,6 +70,7 @@ class VectorMessagingReceiver : MessagingReceiver() {
     @Inject lateinit var unifiedPushStore: UnifiedPushStore
     @Inject lateinit var pushParser: PushParser
     @Inject lateinit var actionIds: NotificationActionIds
+    @Inject lateinit var buildMeta: BuildMeta
 
     private val coroutineScope = CoroutineScope(SupervisorJob())
 
@@ -88,7 +90,7 @@ class VectorMessagingReceiver : MessagingReceiver() {
         Timber.tag(loggerTag.value).d("## onMessage() received")
 
         val sMessage = String(message)
-        if (BuildConfig.LOW_PRIVACY_LOG_ENABLE) {
+        if (buildMeta.lowPrivacyLoggingEnabled) {
             Timber.tag(loggerTag.value).d("## onMessage() $sMessage")
         }
 
@@ -172,7 +174,7 @@ class VectorMessagingReceiver : MessagingReceiver() {
      */
     private fun onMessageReceivedInternal(pushData: PushData) {
         try {
-            if (BuildConfig.LOW_PRIVACY_LOG_ENABLE) {
+            if (buildMeta.lowPrivacyLoggingEnabled) {
                 Timber.tag(loggerTag.value).d("## onMessageReceivedInternal() : $pushData")
             } else {
                 Timber.tag(loggerTag.value).d("## onMessageReceivedInternal()")

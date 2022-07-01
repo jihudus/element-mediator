@@ -21,8 +21,8 @@ import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
 import android.content.res.Resources
-import com.google.i18n.phonenumbers.PhoneNumberUtil
 import android.os.Build
+import com.google.i18n.phonenumbers.PhoneNumberUtil
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -31,6 +31,7 @@ import dagger.hilt.components.SingletonComponent
 import im.vector.app.BuildConfig
 import im.vector.app.EmojiCompatWrapper
 import im.vector.app.EmojiSpanify
+import im.vector.app.config.Config
 import im.vector.app.core.dispatchers.CoroutineDispatchers
 import im.vector.app.core.error.DefaultErrorFormatter
 import im.vector.app.core.error.ErrorFormatter
@@ -197,5 +198,6 @@ object VectorStaticModule {
             isDebug = BuildConfig.DEBUG,
             sdkInt = Build.VERSION.SDK_INT,
             applicationId = BuildConfig.APPLICATION_ID,
+            lowPrivacyLoggingEnabled = Config.LOW_PRIVACY_LOG_ENABLE,
     )
 }
