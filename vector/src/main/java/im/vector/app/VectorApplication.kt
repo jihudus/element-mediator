@@ -40,6 +40,7 @@ import com.mapbox.mapboxsdk.Mapbox
 import com.vanniktech.emoji.EmojiManager
 import com.vanniktech.emoji.google.GoogleEmojiProvider
 import dagger.hilt.android.HiltAndroidApp
+import im.vector.app.config.Config
 import im.vector.app.core.di.ActiveSessionHolder
 import im.vector.app.core.extensions.configureAndStart
 import im.vector.app.core.extensions.startSyncing
@@ -216,7 +217,7 @@ class VectorApplication :
     }
 
     private fun enableStrictModeIfNeeded() {
-        if (buildMeta.enableStrictModeLogs) {
+        if (Config.ENABLE_STRICT_MODE_LOGS) {
             StrictMode.setThreadPolicy(
                     StrictMode.ThreadPolicy.Builder()
                             .detectAll()
