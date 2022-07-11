@@ -50,6 +50,7 @@ import okhttp3.Response
 import org.json.JSONException
 import org.json.JSONObject
 import org.matrix.android.sdk.api.Matrix
+import org.matrix.android.sdk.api.util.BuildVersionSdkIntProvider
 import org.matrix.android.sdk.api.util.JsonDict
 import org.matrix.android.sdk.api.util.MatrixJsonParser
 import org.matrix.android.sdk.api.util.MimeTypes
@@ -76,6 +77,7 @@ class BugReporter @Inject constructor(
         private val systemLocaleProvider: SystemLocaleProvider,
         private val matrix: Matrix,
         private val buildMeta: BuildMeta,
+        private val sdkIntProvider: BuildVersionSdkIntProvider,
 ) {
     var inMultiWindowMode = false
 
@@ -286,7 +288,7 @@ class BugReporter @Inject constructor(
                             .addFormDataPart("verbose_log", vectorPreferences.labAllowedExtendedLogging().toOnOff())
                             .addFormDataPart("multi_window", inMultiWindowMode.toOnOff())
                             .addFormDataPart(
-                                    "os", Build.VERSION.RELEASE + " (API " + buildMeta.sdkInt + ") " +
+                                    "os", Build.VERSION.RELEASE + " (API " + sdkIntProvider.get() + ") " +
                                     Build.VERSION.INCREMENTAL + "-" + Build.VERSION.CODENAME
                             )
                             .addFormDataPart("locale", Locale.getDefault().toString())

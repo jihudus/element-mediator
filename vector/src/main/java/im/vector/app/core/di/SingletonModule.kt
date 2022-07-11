@@ -21,7 +21,6 @@ import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
 import android.content.res.Resources
-import android.os.Build
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import dagger.Binds
 import dagger.Module
@@ -196,7 +195,6 @@ object VectorStaticModule {
     @Singleton
     fun providesBuildMeta() = BuildMeta(
             isDebug = BuildConfig.DEBUG,
-            sdkInt = Build.VERSION.SDK_INT,
             applicationId = BuildConfig.APPLICATION_ID,
             lowPrivacyLoggingEnabled = Config.LOW_PRIVACY_LOG_ENABLE,
             versionName = BuildConfig.VERSION_NAME,
