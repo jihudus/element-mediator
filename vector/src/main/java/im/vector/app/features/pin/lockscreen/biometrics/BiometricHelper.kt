@@ -53,6 +53,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import org.matrix.android.sdk.api.util.BuildVersionSdkIntProvider
 import java.security.KeyStore
+import javax.crypto.Cipher
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -116,7 +117,7 @@ class BiometricHelper @Inject constructor(
      */
     @MainThread
     fun enableAuthentication(activity: FragmentActivity): Flow<Boolean> {
-        return authenticateInternal(activity, checkSystemKeyExists = false, cryptoObject = null)
+        return authenticateInternal(activity, checkSystemKeyExists = false, cryptoObject = getAuthCryptoObject())
     }
 
     /**
@@ -136,7 +137,7 @@ class BiometricHelper @Inject constructor(
      */
     @MainThread
     fun authenticate(activity: FragmentActivity): Flow<Boolean> {
-        return authenticateInternal(activity, checkSystemKeyExists = true, cryptoObject = null)
+        return authenticateInternal(activity, checkSystemKeyExists = true, cryptoObject = getAuthCryptoObject())
     }
 
     /**
@@ -210,6 +211,7 @@ class BiometricHelper @Inject constructor(
                 }
                 .setAllowedAuthenticators(authenticators)
                 .build()
+
         return BiometricPrompt(activity, executor, callback).also {
             showFallbackFragmentIfNeeded(activity, channel.receiveAsFlow(), executor.asCoroutineDispatcher()) {
                 // For some reason this seems to be needed unless we want to receive a fragment transaction exception
@@ -266,12 +268,26 @@ class BiometricHelper @Inject constructor(
         }
 
         override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-            scope.launch {
-                channel.send(true)
-                // Success is a terminal event, should close both the Channel and the CoroutineScope to free resources.
-                channel.close()
-                scope.cancel()
+            val cipher = result.cryptoObject?.cipher
+            if (cipher != null && !isCipherValid(cipher)) {
+                scope.launch {
+                    channel.close(IllegalStateException("System key was not valid after authentication."))
+                    scope.cancel()
+                }
+            } else {
+                scope.launch {
+                    channel.send(true)
+                    // Success is a terminal event, should close both the Channel and the CoroutineScope to free resources.
+                    channel.close()
+                    scope.cancel()
+                }
             }
+        }
+
+        private fun isCipherValid(cipher: Cipher): Boolean {
+            return runCatching {
+                cipher.doFinal("biometric_challenge".toByteArray())
+            }.isSuccess
         }
     }
 
@@ -316,6 +332,11 @@ class BiometricHelper @Inject constructor(
 
     @VisibleForTesting(otherwise = PRIVATE)
     internal fun createAuthChannel(): Channel<Boolean> = Channel(capacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+
+    @SuppressLint("NewApi")
+    private fun getAuthCryptoObject(): BiometricPrompt.CryptoObject? = buildVersionSdkIntProvider.whenAtLeast(Build.VERSION_CODES.P) {
+        lockScreenKeyRepository.getSystemKeyAuthCryptoObject()
+    }
 
     companion object {
         private const val FALLBACK_BIOMETRIC_FRAGMENT_TAG = "fragment.biometric_fallback"
