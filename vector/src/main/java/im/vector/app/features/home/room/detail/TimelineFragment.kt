@@ -91,6 +91,7 @@ import im.vector.app.core.platform.VectorBaseFragment
 import im.vector.app.core.platform.VectorMenuProvider
 import im.vector.app.core.platform.lifecycleAwareLazy
 import im.vector.app.core.platform.showOptimizedSnackbar
+import im.vector.app.core.resources.BuildMeta
 import im.vector.app.core.resources.ColorProvider
 import im.vector.app.core.resources.UserPreferencesProvider
 import im.vector.app.core.time.Clock
@@ -277,6 +278,7 @@ class TimelineFragment @Inject constructor(
         private val shareIntentHandler: ShareIntentHandler,
         private val clock: Clock,
         private val vectorFeatures: VectorFeatures,
+        private val buildMeta: BuildMeta,
 ) :
         VectorBaseFragment<FragmentTimelineBinding>(),
         TimelineEventController.Callback,
@@ -373,7 +375,7 @@ class TimelineFragment @Inject constructor(
         sharedActionViewModel = activityViewModelProvider.get(MessageSharedActionViewModel::class.java)
         sharedActivityActionViewModel = activityViewModelProvider.get(RoomDetailSharedActionViewModel::class.java)
         knownCallsViewModel = activityViewModelProvider.get(SharedKnownCallsViewModel::class.java)
-        attachmentsHelper = AttachmentsHelper(requireContext(), this).register()
+        attachmentsHelper = AttachmentsHelper(requireContext(), this, buildMeta).register()
         callActionsHandler = StartCallActionsHandler(
                 roomId = timelineArgs.roomId,
                 fragment = this,
@@ -495,6 +497,7 @@ class TimelineFragment @Inject constructor(
                 is RoomDetailViewEvents.ShowRoomAvatarFullScreen -> it.matrixItem?.let { item ->
                     navigator.openBigImageViewer(requireActivity(), it.view, item)
                 }
+
                 is RoomDetailViewEvents.StartChatEffect -> handleChatEffect(it.type)
                 RoomDetailViewEvents.StopChatEffects -> handleStopChatEffects()
                 is RoomDetailViewEvents.DisplayAndAcceptCall -> acceptIncomingCall(it)
@@ -606,6 +609,7 @@ class TimelineFragment @Inject constructor(
                 views.viewKonfetti.isVisible = true
                 views.viewKonfetti.play()
             }
+
             ChatEffect.SNOWFALL -> {
                 views.viewSnowFall.isVisible = true
                 views.viewSnowFall.restartFalling()
@@ -946,10 +950,12 @@ class TimelineFragment @Inject constructor(
             is SharedData.Text -> {
                 messageComposerViewModel.handle(MessageComposerAction.EnterRegularMode(sharedData.text, fromSharing = true))
             }
+
             is SharedData.Attachments -> {
                 // open share edition
                 onContentAttachmentsReady(sharedData.attachmentData)
             }
+
             null -> Timber.v("No share data to process")
         }
     }
@@ -1131,34 +1137,42 @@ class TimelineFragment @Inject constructor(
                 navigator.openInviteUsersToRoom(requireActivity(), timelineArgs.roomId)
                 true
             }
+
             R.id.timeline_setting -> {
                 navigator.openRoomProfile(requireActivity(), timelineArgs.roomId)
                 true
             }
+
             R.id.open_matrix_apps -> {
                 timelineViewModel.handle(RoomDetailAction.ManageIntegrations)
                 true
             }
+
             R.id.voice_call -> {
                 callActionsHandler.onVoiceCallClicked()
                 true
             }
+
             R.id.video_call -> {
                 callActionsHandler.onVideoCallClicked()
                 true
             }
+
             R.id.menu_timeline_thread_list -> {
                 navigateToThreadList()
                 true
             }
+
             R.id.search -> {
                 handleSearchAction()
                 true
             }
+
             R.id.dev_tools -> {
                 navigator.openDevTools(requireContext(), timelineArgs.roomId)
                 true
             }
+
             R.id.menu_thread_timeline_copy_link -> {
                 getRootThreadEventId()?.let {
                     val permalink = session.permalinkService().createPermalink(timelineArgs.roomId, it)
@@ -1167,10 +1181,12 @@ class TimelineFragment @Inject constructor(
                 }
                 true
             }
+
             R.id.menu_thread_timeline_view_in_room -> {
                 handleViewInRoomAction()
                 true
             }
+
             R.id.menu_thread_timeline_share -> {
                 getRootThreadEventId()?.let {
                     val permalink = session.permalinkService().createPermalink(timelineArgs.roomId, it)
@@ -1178,6 +1194,7 @@ class TimelineFragment @Inject constructor(
                 }
                 true
             }
+
             else -> false
         }
     }
@@ -1326,8 +1343,10 @@ class TimelineFragment @Inject constructor(
         when (roomDetailPendingAction) {
             is RoomDetailPendingAction.JumpToReadReceipt ->
                 timelineViewModel.handle(RoomDetailAction.JumpToReadReceipt(roomDetailPendingAction.userId))
+
             is RoomDetailPendingAction.MentionUser ->
                 insertUserDisplayNameInTextEditor(roomDetailPendingAction.userId)
+
             is RoomDetailPendingAction.OpenRoom ->
                 handleOpenRoom(RoomDetailViewEvents.OpenRoom(roomDetailPendingAction.roomId, roomDetailPendingAction.closeCurrentRoom))
         }
@@ -1470,6 +1489,7 @@ class TimelineFragment @Inject constructor(
                         is MessageTextItem -> {
                             return (model as AbsMessageItem).attributes.informationData.sendState == SendState.SYNCED
                         }
+
                         else -> false
                     }
                 }
@@ -1497,6 +1517,7 @@ class TimelineFragment @Inject constructor(
             val showJumpToUnreadBanner = when (state.unreadState) {
                 UnreadState.Unknown,
                 UnreadState.HasNoUnread -> false
+
                 is UnreadState.ReadMarkerNotLoaded -> true
                 is UnreadState.HasUnread -> {
                     if (state.canShowJumpToReadMarker) {
@@ -1658,9 +1679,11 @@ class TimelineFragment @Inject constructor(
                     CanSendStatus.Allowed -> {
                         NotificationAreaView.State.Hidden
                     }
+
                     CanSendStatus.NoPermission -> {
                         NotificationAreaView.State.NoPermissionToPost
                     }
+
                     is CanSendStatus.UnSupportedE2eAlgorithm -> {
                         NotificationAreaView.State.UnsupportedAlgorithm(mainState.isAllowedToSetupEncryption)
                     }
@@ -1735,22 +1758,28 @@ class TimelineFragment @Inject constructor(
             is MessageComposerViewEvents.SlashCommandLoading -> {
                 showLoading(null)
             }
+
             is MessageComposerViewEvents.SlashCommandError -> {
                 displayCommandError(getString(R.string.command_problem_with_parameters, sendMessageResult.command.command))
             }
+
             is MessageComposerViewEvents.SlashCommandUnknown -> {
                 displayCommandError(getString(R.string.unrecognized_command, sendMessageResult.command))
             }
+
             is MessageComposerViewEvents.SlashCommandResultOk -> {
                 handleSlashCommandResultOk(sendMessageResult.parsedCommand)
             }
+
             is MessageComposerViewEvents.SlashCommandResultError -> {
                 dismissLoadingDialog()
                 displayCommandError(errorFormatter.toHumanReadable(sendMessageResult.throwable))
             }
+
             is MessageComposerViewEvents.SlashCommandNotImplemented -> {
                 displayCommandError(getString(R.string.not_implemented))
             }
+
             is MessageComposerViewEvents.SlashCommandNotSupportedInThreads -> {
                 displayCommandError(getString(R.string.command_not_supported_in_threads, sendMessageResult.command.command))
             }
@@ -1766,6 +1795,7 @@ class TimelineFragment @Inject constructor(
             is ParsedCommand.SetMarkdown -> {
                 showSnackWithMessage(getString(if (parsedCommand.enable) R.string.markdown_has_been_enabled else R.string.markdown_has_been_disabled))
             }
+
             else -> Unit
         }
     }
@@ -1784,6 +1814,7 @@ class TimelineFragment @Inject constructor(
             WithHeldCode.UNVERIFIED -> R.string.crypto_error_withheld_unverified
             WithHeldCode.UNAUTHORISED,
             WithHeldCode.UNAVAILABLE -> R.string.crypto_error_withheld_generic
+
             else -> R.string.notice_crypto_unable_to_decrypt_friendly_desc
         }
         MaterialAlertDialogBuilder(requireActivity())
@@ -1844,6 +1875,7 @@ class TimelineFragment @Inject constructor(
                                 }
                                 .show()
                     }
+
                     data.inappropriate -> {
                         MaterialAlertDialogBuilder(requireActivity(), R.style.ThemeOverlay_Vector_MaterialAlertDialog_NegativeDestructive)
                                 .setTitle(R.string.content_reported_as_inappropriate_title)
@@ -1854,6 +1886,7 @@ class TimelineFragment @Inject constructor(
                                 }
                                 .show()
                     }
+
                     else -> {
                         MaterialAlertDialogBuilder(requireActivity(), R.style.ThemeOverlay_Vector_MaterialAlertDialog_NegativeDestructive)
                                 .setTitle(R.string.content_reported_title)
@@ -1866,6 +1899,7 @@ class TimelineFragment @Inject constructor(
                     }
                 }
             }
+
             is RoomDetailAction.RequestVerification -> {
                 Timber.v("## SAS RequestVerification action")
                 VerificationBottomSheet.withArgs(
@@ -1873,6 +1907,7 @@ class TimelineFragment @Inject constructor(
                         data.userId
                 ).show(parentFragmentManager, "REQ")
             }
+
             is RoomDetailAction.AcceptVerificationRequest -> {
                 Timber.v("## SAS AcceptVerificationRequest action")
                 VerificationBottomSheet.withArgs(
@@ -1881,6 +1916,7 @@ class TimelineFragment @Inject constructor(
                         data.transactionId
                 ).show(parentFragmentManager, "REQ")
             }
+
             is RoomDetailAction.ResumeVerification -> {
                 val otherUserId = data.otherUserId ?: return
                 VerificationBottomSheet.withArgs(
@@ -1889,6 +1925,7 @@ class TimelineFragment @Inject constructor(
                         transactionId = data.transactionId,
                 ).show(parentFragmentManager, "REQ")
             }
+
             else -> Unit
         }
     }
@@ -1943,9 +1980,11 @@ class TimelineFragment @Inject constructor(
                                 continueTo = url
                         )
                     }
+
                     title.isValidUrl() && url.isValidUrl() && URL(title).host != URL(url).host -> {
                         displayUrlConfirmationDialog(title, url)
                     }
+
                     else -> {
                         openUrlInExternalBrowser(requireContext(), url)
                     }
@@ -2041,19 +2080,24 @@ class TimelineFragment @Inject constructor(
             is MessageVerificationRequestContent -> {
                 timelineViewModel.handle(RoomDetailAction.ResumeVerification(informationData.eventId, null))
             }
+
             is MessageWithAttachmentContent -> {
                 val action = RoomDetailAction.DownloadOrOpen(informationData.eventId, informationData.senderId, messageContent)
                 timelineViewModel.handle(action)
             }
+
             is EncryptedEventContent -> {
                 timelineViewModel.handle(RoomDetailAction.TapOnFailedToDecrypt(informationData.eventId))
             }
+
             is MessageLocationContent -> {
                 handleShowLocationPreview(messageContent, informationData.senderId)
             }
+
             is MessageBeaconInfoContent -> {
                 navigateToLocationLiveMap()
             }
+
             else -> {
                 val handled = onThreadSummaryClicked(informationData.eventId, isRootThreadEvent)
                 if (!handled) {
@@ -2197,6 +2241,7 @@ class TimelineFragment @Inject constructor(
                     openLocation(requireActivity(), it.latitude, it.longitude)
                 }
             }
+
             is MessageWithAttachmentContent -> {
                 lifecycleScope.launch {
                     val result = runCatching { session.fileService().downloadFile(messageContent = action.messageContent) }
@@ -2255,30 +2300,38 @@ class TimelineFragment @Inject constructor(
             is EventSharedAction.OpenUserProfile -> {
                 openRoomMemberProfile(action.userId)
             }
+
             is EventSharedAction.AddReaction -> {
                 openEmojiReactionPicker(action.eventId)
             }
+
             is EventSharedAction.ViewReactions -> {
                 ViewReactionsBottomSheet.newInstance(timelineArgs.roomId, action.messageInformationData)
                         .show(requireActivity().supportFragmentManager, "DISPLAY_REACTIONS")
             }
+
             is EventSharedAction.Copy -> {
                 // I need info about the current selected message :/
                 copyToClipboard(requireContext(), action.content, false)
                 showSnackWithMessage(getString(R.string.copied_to_clipboard))
             }
+
             is EventSharedAction.Redact -> {
                 promptConfirmationToRedactEvent(action)
             }
+
             is EventSharedAction.Share -> {
                 onShareActionClicked(action)
             }
+
             is EventSharedAction.Save -> {
                 onSaveActionClicked(action)
             }
+
             is EventSharedAction.ViewEditHistory -> {
                 onEditedDecorationClicked(action.messageInformationData)
             }
+
             is EventSharedAction.ViewSource -> {
                 JSonViewerDialog.newInstance(
                         action.content,
@@ -2286,6 +2339,7 @@ class TimelineFragment @Inject constructor(
                         createJSonViewerStyleProvider(colorProvider)
                 ).show(childFragmentManager, "JSON_VIEWER")
             }
+
             is EventSharedAction.ViewDecryptedSource -> {
                 JSonViewerDialog.newInstance(
                         action.content,
@@ -2293,10 +2347,12 @@ class TimelineFragment @Inject constructor(
                         createJSonViewerStyleProvider(colorProvider)
                 ).show(childFragmentManager, "JSON_VIEWER")
             }
+
             is EventSharedAction.QuickReact -> {
                 // eventId,ClickedOn,Add
                 timelineViewModel.handle(RoomDetailAction.UpdateQuickReactAction(action.eventId, action.clickedOn, action.add))
             }
+
             is EventSharedAction.Edit -> {
                 if (action.eventType in EventType.POLL_START) {
                     navigator.openCreatePoll(requireContext(), timelineArgs.roomId, action.eventId, PollMode.EDIT)
@@ -2306,9 +2362,11 @@ class TimelineFragment @Inject constructor(
                     requireActivity().toast(R.string.error_voice_message_cannot_reply_or_edit)
                 }
             }
+
             is EventSharedAction.Quote -> {
                 messageComposerViewModel.handle(MessageComposerAction.EnterQuoteMode(action.eventId, views.composerLayout.text.toString()))
             }
+
             is EventSharedAction.Reply -> {
                 if (withState(messageComposerViewModel) { it.isVoiceMessageIdle }) {
                     messageComposerViewModel.handle(MessageComposerAction.EnterReplyMode(action.eventId, views.composerLayout.text.toString()))
@@ -2316,6 +2374,7 @@ class TimelineFragment @Inject constructor(
                     requireActivity().toast(R.string.error_voice_message_cannot_reply_or_edit)
                 }
             }
+
             is EventSharedAction.ReplyInThread -> {
                 if (withState(messageComposerViewModel) { it.isVoiceMessageIdle }) {
                     onReplyInThreadClicked(action)
@@ -2323,6 +2382,7 @@ class TimelineFragment @Inject constructor(
                     requireActivity().toast(R.string.error_voice_message_cannot_reply_or_edit)
                 }
             }
+
             is EventSharedAction.ViewInRoom -> {
                 if (withState(messageComposerViewModel) { it.isVoiceMessageIdle }) {
                     handleViewInRoomAction()
@@ -2330,20 +2390,25 @@ class TimelineFragment @Inject constructor(
                     requireActivity().toast(R.string.error_voice_message_cannot_reply_or_edit)
                 }
             }
+
             is EventSharedAction.CopyPermalink -> {
                 val permalink = session.permalinkService().createPermalink(timelineArgs.roomId, action.eventId)
                 copyToClipboard(requireContext(), permalink, false)
                 showSnackWithMessage(getString(R.string.copied_to_clipboard))
             }
+
             is EventSharedAction.Resend -> {
                 timelineViewModel.handle(RoomDetailAction.ResendMessage(action.eventId))
             }
+
             is EventSharedAction.Remove -> {
                 timelineViewModel.handle(RoomDetailAction.RemoveFailedEcho(action.eventId))
             }
+
             is EventSharedAction.Cancel -> {
                 handleCancelSend(action)
             }
+
             is EventSharedAction.ReportContentSpam -> {
                 timelineViewModel.handle(
                         RoomDetailAction.ReportContent(
@@ -2351,6 +2416,7 @@ class TimelineFragment @Inject constructor(
                         )
                 )
             }
+
             is EventSharedAction.ReportContentInappropriate -> {
                 timelineViewModel.handle(
                         RoomDetailAction.ReportContent(
@@ -2358,29 +2424,37 @@ class TimelineFragment @Inject constructor(
                         )
                 )
             }
+
             is EventSharedAction.ReportContentCustom -> {
                 promptReasonToReportContent(action)
             }
+
             is EventSharedAction.IgnoreUser -> {
                 action.senderId?.let { askConfirmationToIgnoreUser(it) }
             }
+
             is EventSharedAction.OnUrlClicked -> {
                 onUrlClicked(action.url, action.title)
             }
+
             is EventSharedAction.OnUrlLongClicked -> {
                 onUrlLongClicked(action.url)
             }
+
             is EventSharedAction.ReRequestKey -> {
                 timelineViewModel.handle(RoomDetailAction.ReRequestKeys(action.eventId))
             }
+
             is EventSharedAction.UseKeyBackup -> {
                 context?.let {
                     startActivity(KeysBackupRestoreActivity.intent(it))
                 }
             }
+
             is EventSharedAction.EndPoll -> {
                 askConfirmationToEndPoll(action.eventId)
             }
+
             is EventSharedAction.ReportContent -> Unit /* Not clickable */
             EventSharedAction.Separator -> Unit /* Not clickable */
         }
@@ -2598,6 +2672,7 @@ class TimelineFragment @Inject constructor(
                     cameraActivityResultLauncher = attachmentCameraActivityResultLauncher,
                     cameraVideoActivityResultLauncher = attachmentCameraVideoActivityResultLauncher
             )
+
             AttachmentTypeSelectorView.Type.FILE -> attachmentsHelper.selectFile(attachmentFileActivityResultLauncher)
             AttachmentTypeSelectorView.Type.GALLERY -> attachmentsHelper.selectGallery(attachmentMediaActivityResultLauncher)
             AttachmentTypeSelectorView.Type.CONTACT -> attachmentsHelper.selectContact(attachmentContactActivityResultLauncher)
@@ -2630,7 +2705,6 @@ class TimelineFragment @Inject constructor(
     }
 
     override fun onContactAttachmentReady(contactAttachment: ContactAttachment) {
-        super.onContactAttachmentReady(contactAttachment)
         val formattedContact = contactAttachment.toHumanReadable()
         messageComposerViewModel.handle(MessageComposerAction.SendMessage(formattedContact, false))
     }
