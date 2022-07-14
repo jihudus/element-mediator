@@ -102,6 +102,9 @@ class UiAllScreensSanityTest {
                 val user = data.getString("username")
                 val pass = data.getString("password")
                 elementRobot.login(user, pass)
+
+                // DO NOT JUDGE THIS TEST SUITE BUT...
+                Thread.sleep(60000); // try to wait for cross signing to have kicked in...
                 post(posturl, "{\"response\": \"loggedin\"}")
             }
             if (action == "register") {
@@ -109,7 +112,14 @@ class UiAllScreensSanityTest {
                 val user = data.getString("username")
                 val pass = data.getString("password")
                 elementRobot.register(user, pass)
-                // TODO register and navigate to root menu
+
+                Thread.sleep(20000); // try to wait for cross signing to have kicked in...
+                System.out.println("Waited 20s")
+                Thread.sleep(20000); // try to wait for cross signing to have kicked in...
+                System.out.println("Waited 40s")
+                Thread.sleep(20000); // try to wait for cross signing to have kicked in...
+                System.out.println("Waited 60s")
+
                 post(posturl, "{\"response\": \"registered\"}")
             }
             if (action == "idle") {

@@ -17,6 +17,7 @@
 package im.vector.app.ui.robot
 
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.PerformException
 import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.matcher.ViewMatchers.withChild
@@ -38,6 +39,7 @@ import im.vector.app.espresso.tools.waitUntilViewVisible
 import im.vector.app.espresso.tools.waitUntilDialogVisible
 import im.vector.app.features.analytics.ui.consent.AnalyticsOptInActivity
 import im.vector.app.waitForView
+import im.vector.app.withRetry
 import org.hamcrest.core.AllOf
 import org.hamcrest.core.AnyOf
 import java.util.EnumSet.allOf
@@ -45,7 +47,8 @@ import java.util.EnumSet.allOf
 class CryptoRobot {
 
 
-    fun startVerification() {
+    // Do this if we don't get the popup in time; but actually; just wait for the pop-up
+    fun manualVerification() {
         // Settings
         BaristaDrawerInteractions.openDrawer()
         clickOn(R.id.homeDrawerHeaderSettingsView)
@@ -55,9 +58,30 @@ class CryptoRobot {
         AllOf.allOf(withId(R.id.itemVerificationClickableZone),withChild(withText(R.string.verification_verify_device))).performAction(click())
             }
 
+    fun startVerification() {
+        // These are kinda async popups, be somewhat lenient with them.
+        withRetry {
+            waitUntilViewVisible(withText(R.string.crosssigning_verify_this_session))
+            clickOn(R.string.crosssigning_verify_this_session)
+        }
+    }
+
     fun acceptVerification() {
-        waitForView(withText(R.string.verification_request))
-        clickOn(R.string.verification_request)
+        // This is somewhat async; be lenient
+
+        withRetry {
+            waitUntilViewVisible(withText(R.string.verification_request))
+            clickOn(R.string.verification_request)
+        }
+        try {
+            withRetry {
+
+                waitUntilViewVisible(withText(R.string.verification_scan_emoji_title))
+                clickOn(R.string.verification_scan_emoji_title);
+            }
+        } catch(e: PerformException) {
+            // Ignore...
+        }
     }
 
     fun completeVerification() {
