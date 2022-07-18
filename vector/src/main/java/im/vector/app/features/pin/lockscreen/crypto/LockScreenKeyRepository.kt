@@ -88,6 +88,5 @@ class LockScreenKeyRepository @Inject constructor(
     /**
      * Returns a [BiometricPrompt.CryptoObject] for the system key.
      */
-    @RequiresApi(Build.VERSION_CODES.P)
     fun getSystemKeyAuthCryptoObject() = systemKeyCrypto.getAuthCryptoObject()
 }

@@ -21,7 +21,6 @@ import android.content.Context
 import android.os.Build
 import android.security.keystore.KeyPermanentlyInvalidatedException
 import android.util.Base64
-import androidx.annotation.RequiresApi
 import androidx.annotation.VisibleForTesting
 import androidx.biometric.BiometricPrompt
 import dagger.assisted.Assisted
@@ -139,6 +138,5 @@ class KeyStoreCrypto @AssistedInject constructor(
      * @throws KeyPermanentlyInvalidatedException if key is invalidated.
      */
     @Throws(KeyPermanentlyInvalidatedException::class)
-    @RequiresApi(Build.VERSION_CODES.P)
     fun getAuthCryptoObject() = BiometricPrompt.CryptoObject(secretStoringUtils.getEncryptCipher(alias))
 }
