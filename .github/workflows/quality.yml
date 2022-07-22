@@ -108,7 +108,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Dependency analysis
-        run: ./gradlew dependencyCheckAnalyze "-Porg.gradle.jvmargs=-XX:MaxRAM=7g -Xmx3g -XX:MaxMetaspaceSize=1g" -Porg.gradle.parallel=false
+        run: ./gradlew dependencyCheckAnalyze "-Porg.gradle.jvmargs=-XX:MaxRAM=7g -Xmx3g -XX:MaxMetaspaceSize=1g" -Porg.gradle.parallel=false -Dfile.encoding=UTF-8
       - name: Upload dependency analysis
         if: always()
         uses: actions/upload-artifact@v3
@@ -135,7 +135,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
       - name: Lint analysis
-        run: ./gradlew clean :vector:lint --stacktrace "-Porg.gradle.jvmargs=-XX:MaxRAM=7g -Xmx3g -XX:MaxMetaspaceSize=1g" -Porg.gradle.parallel=false
+        run: ./gradlew clean :vector:lint --stacktrace "-Porg.gradle.jvmargs=-XX:MaxRAM=7g -Xmx3g -XX:MaxMetaspaceSize=1g" -Porg.gradle.parallel=false -Dfile.encoding=UTF-8
       - name: Upload reports
         if: always()
         uses: actions/upload-artifact@v3
@@ -168,7 +168,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
       - name: Lint ${{ matrix.target }} release
-        run: ./gradlew clean lint${{ matrix.target }}Release --stacktrace "-Porg.gradle.jvmargs=-XX:MaxRAM=7g -Xmx3g -XX:MaxMetaspaceSize=1g" -Porg.gradle.parallel=false
+        run: ./gradlew clean lint${{ matrix.target }}Release --stacktrace "-Porg.gradle.jvmargs=-XX:MaxRAM=7g -Xmx3g -XX:MaxMetaspaceSize=1g" -Porg.gradle.parallel=false -Dfile.encoding=UTF-8
       - name: Upload ${{ matrix.target }} linting report
         if: always()
         uses: actions/upload-artifact@v3
@@ -188,7 +188,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Run detekt
         run: |
-          ./gradlew detekt "-Porg.gradle.jvmargs=-XX:MaxRAM=7g -Xmx3g -XX:MaxMetaspaceSize=1g" -Porg.gradle.parallel=false
+          ./gradlew detekt "-Porg.gradle.jvmargs=-XX:MaxRAM=7g -Xmx3g -XX:MaxMetaspaceSize=1g" -Porg.gradle.parallel=false -Dfile.encoding=UTF-8
       - name: Upload reports
         if: always()
         uses: actions/upload-artifact@v3
