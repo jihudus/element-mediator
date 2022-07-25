@@ -27,7 +27,11 @@ if editedFiles.count > 0, changelogFiles.isEmpty {
 if let ticketNumberRegex = try? NSRegularExpression(pattern: "#\\d+") {
     let missingTicketNumber = !danger.git.commits.filter {
         !$0.message.contains("vector-im/element-x-ios/issues/") &&
-            ticketNumberRegex.firstMatch(in: $0.message, options: [], range: .init(location: 0, length: $0.message.utf16.count)) == nil
+            ticketNumberRegex.firstMatch(
+                in: $0.message,
+                options: [],
+                range: .init(location: 0, length: $0.message.utf16.count
+            )) == nil
     }.isEmpty
 
     if missingTicketNumber {
@@ -57,7 +61,6 @@ let allowList = [
     "stefanceriu",
     "yostyle"
 ]
-
 
 let requiresSignOff = !allowList.contains(where: {
     $0.caseInsensitiveCompare(danger.github.pullRequest.user.login) == .orderedSame
