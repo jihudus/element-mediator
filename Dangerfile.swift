@@ -55,7 +55,7 @@ let allowList = [
     "onurays",
     "ouchadam",
     "stefanceriu",
-    "yostyle",
+    "yostyle"
 ]
 
 
