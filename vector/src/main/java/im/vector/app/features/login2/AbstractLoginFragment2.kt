@@ -30,6 +30,13 @@ import im.vector.app.core.platform.OnBackPressed
 import im.vector.app.core.platform.VectorBaseFragment
 import kotlinx.coroutines.CancellationException
 import org.matrix.android.sdk.api.failure.Failure
+import timber.log.Timber
+
+private fun myLog(msg: String, vararg arg: Any?) {
+    val args = arg.toList()
+    Timber.d("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ AbstractLoginFragment2.kt ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+    Timber.d("$msg : $args")
+}
 
 /**
  * Parent Fragment for all the login/registration screens.
@@ -61,6 +68,7 @@ abstract class AbstractLoginFragment2<VB : ViewBinding> : VectorBaseFragment<VB>
     }
 
     private fun handleLoginViewEvents(loginViewEvents: LoginViewEvents2) {
+        myLog("handleLoginViewEvents", loginViewEvents)
         when (loginViewEvents) {
             is LoginViewEvents2.Failure -> showFailure(loginViewEvents.throwable)
             else ->
@@ -72,6 +80,7 @@ abstract class AbstractLoginFragment2<VB : ViewBinding> : VectorBaseFragment<VB>
     override fun showFailure(throwable: Throwable) {
         // Only the resumed Fragment can eventually show the error, to avoid multiple dialog display
         if (!isResumed) {
+            myLog("showFailure", isResumed, javaClass.simpleName)
             return
         }
 
@@ -87,6 +96,7 @@ abstract class AbstractLoginFragment2<VB : ViewBinding> : VectorBaseFragment<VB>
     }
 
     private fun showUnrecognizedCertificateFailure(failure: Failure.UnrecognizedCertificateFailure) {
+        myLog("showUnrecognizedCertificateFailure")
         // Ask the user to accept the certificate
         unrecognizedCertificateDialog.show(requireActivity(),
                 failure.fingerprint,
@@ -102,12 +112,13 @@ abstract class AbstractLoginFragment2<VB : ViewBinding> : VectorBaseFragment<VB>
                     }
 
                     override fun onReject() {
-                        // Nothing to do in this case
+                        loginViewModel.handle(LoginAction2.RejectCertificate)
                     }
                 })
     }
 
     open fun onError(throwable: Throwable) {
+        myLog("VectorBaseFragment.showFailure")
         super.showFailure(throwable)
     }
 

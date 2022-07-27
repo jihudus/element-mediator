@@ -26,6 +26,8 @@ import org.matrix.android.sdk.api.auth.registration.FlowResult
 sealed class LoginViewEvents2 : VectorViewEvents {
     data class Failure(val throwable: Throwable) : LoginViewEvents2()
 
+    object ResetLoginFlow : LoginViewEvents2()
+
     data class RegistrationFlowResult(val flowResult: FlowResult, val isRegistrationStarted: Boolean) : LoginViewEvents2()
     object OutdatedHomeserver : LoginViewEvents2()
 

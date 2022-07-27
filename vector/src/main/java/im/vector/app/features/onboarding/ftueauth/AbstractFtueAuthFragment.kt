@@ -34,6 +34,13 @@ import im.vector.app.features.onboarding.OnboardingViewModel
 import im.vector.app.features.onboarding.OnboardingViewState
 import kotlinx.coroutines.CancellationException
 import org.matrix.android.sdk.api.failure.Failure
+import timber.log.Timber
+
+private fun myLog(msg: String, vararg arg: Any?) {
+    val args = arg.toList()
+    Timber.d("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ AbstractFtueAuthFragment.kt ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+    Timber.d("$msg : $args")
+}
 
 /**
  * Parent Fragment for all the login/registration screens.
@@ -74,6 +81,7 @@ abstract class AbstractFtueAuthFragment<VB : ViewBinding> : VectorBaseFragment<V
     }
 
     override fun showFailure(throwable: Throwable) {
+        myLog("showFailure", throwable)
         // Only the resumed Fragment can eventually show the error, to avoid multiple dialog display
         if (!isResumed) {
             return

@@ -42,11 +42,11 @@ interface VectorFeatures {
 }
 
 class DefaultVectorFeatures : VectorFeatures {
-    override fun onboardingVariant(): VectorFeatures.OnboardingVariant = BuildConfig.ONBOARDING_VARIANT
+    override fun onboardingVariant(): VectorFeatures.OnboardingVariant = VectorFeatures.OnboardingVariant.LOGIN_2
     override fun isOnboardingAlreadyHaveAccountSplashEnabled() = true
-    override fun isOnboardingSplashCarouselEnabled() = true
-    override fun isOnboardingUseCaseEnabled() = true
-    override fun isOnboardingPersonalizeEnabled() = false
+    override fun isOnboardingSplashCarouselEnabled() = false
+    override fun isOnboardingUseCaseEnabled() = false
+    override fun isOnboardingPersonalizeEnabled() = true
     override fun isOnboardingCombinedRegisterEnabled() = false
     override fun isOnboardingCombinedLoginEnabled() = false
     override fun allowExternalUnifiedPushDistributors(): Boolean = Config.ALLOW_EXTERNAL_UNIFIED_PUSH_DISTRIBUTORS

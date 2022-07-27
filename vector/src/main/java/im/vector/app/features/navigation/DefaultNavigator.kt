@@ -112,8 +112,15 @@ import org.matrix.android.sdk.api.session.room.model.roomdirectory.PublicRoom
 import org.matrix.android.sdk.api.session.terms.TermsService
 import org.matrix.android.sdk.api.session.widgets.model.Widget
 import org.matrix.android.sdk.api.session.widgets.model.WidgetType
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
+
+private fun myLog(msg: String, vararg arg: Any?) {
+    val args = arg.toList()
+    Timber.d("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ DefaultNavigator.kt ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+    Timber.d("$msg : $args")
+}
 
 @Singleton
 class DefaultNavigator @Inject constructor(
@@ -127,6 +134,7 @@ class DefaultNavigator @Inject constructor(
 ) : Navigator {
 
     override fun openLogin(context: Context, loginConfig: LoginConfig?, flags: Int) {
+        myLog("openLogin", loginConfig, flags)
         val intent = when (features.onboardingVariant()) {
             OnboardingVariant.LEGACY -> LoginActivity.newIntent(context, loginConfig)
             OnboardingVariant.LOGIN_2,
@@ -415,6 +423,7 @@ class DefaultNavigator @Inject constructor(
     }
 
     override fun openAnalyticsOptIn(context: Context) {
+        myLog("openAnalyticsOptIn")
         context.startActivity(Intent(context, AnalyticsOptInActivity::class.java))
     }
 
@@ -569,6 +578,7 @@ class DefaultNavigator @Inject constructor(
     }
 
     private fun startActivity(context: Context, intent: Intent, buildTask: Boolean) {
+        myLog("startActivity", intent, buildTask)
         if (buildTask) {
             val stackBuilder = TaskStackBuilder.create(context)
             stackBuilder.addNextIntentWithParentStack(intent)

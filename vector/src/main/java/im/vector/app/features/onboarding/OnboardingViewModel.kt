@@ -67,6 +67,12 @@ import timber.log.Timber
 import java.util.UUID
 import java.util.concurrent.CancellationException
 
+private fun myLog(msg: String, vararg arg: Any?) {
+    val args = arg.toList()
+    Timber.d("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ OnboardingViewModel.kt ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+    Timber.d("$msg : $args")
+}
+
 /**
  *
  */
@@ -139,6 +145,7 @@ class OnboardingViewModel @AssistedInject constructor(
     private var currentJob: Job? by cancelCurrentOnSet()
 
     override fun handle(action: OnboardingAction) {
+        myLog("handle", action)
         when (action) {
             is OnboardingAction.SplashAction -> handleSplashAction(action)
             is OnboardingAction.UpdateUseCase -> handleUpdateUseCase(action)
@@ -267,6 +274,7 @@ class OnboardingViewModel @AssistedInject constructor(
     }
 
     private fun handleUserAcceptCertificate(action: OnboardingAction.UserAcceptCertificate) {
+        myLog("handleUserAcceptCertificate", lastAction)
         // It happens when we get the login flow, or during direct authentication.
         // So alter the homeserver config and retrieve again the login flow
         when (val finalLastAction = lastAction) {
@@ -482,6 +490,8 @@ class OnboardingViewModel @AssistedInject constructor(
 
     private fun handleInitWith(action: OnboardingAction.InitWith) {
         loginConfig = action.loginConfig
+        myLog("handleInitWith", loginConfig)
+
         // If there is a pending email validation continue on this step
         try {
             if (registrationWizard.isRegistrationStarted()) {

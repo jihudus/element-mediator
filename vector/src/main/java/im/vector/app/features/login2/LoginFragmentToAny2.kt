@@ -184,6 +184,12 @@ class LoginFragmentToAny2 @Inject constructor() : AbstractSSOLoginFragment2<Frag
                 }
             }
         }
+        if (throwable is Failure.NetworkConnection) {
+            displayErrorDialog(throwable)
+            views.loginFieldTil.isEnabled = false
+            views.passwordFieldTil.isEnabled = false
+            views.forgetPasswordButton.isEnabled = false
+        }
     }
 
     override fun updateWithState(state: LoginViewState2) {

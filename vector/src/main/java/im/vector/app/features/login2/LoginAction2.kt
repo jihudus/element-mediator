@@ -24,6 +24,10 @@ import org.matrix.android.sdk.api.auth.registration.RegisterThreePid
 import org.matrix.android.sdk.api.network.ssl.Fingerprint
 
 sealed class LoginAction2 : VectorViewModelAction {
+
+    // Get server url from LoginConfig
+//    data class CustomServerSelect(val loginConfig: LoginConfig?) : LoginAction2()
+
     // First action
     data class UpdateSignMode(val signMode: SignMode2) : LoginAction2()
 
@@ -86,6 +90,7 @@ sealed class LoginAction2 : VectorViewModelAction {
     data class PostViewEvent(val viewEvent: LoginViewEvents2) : LoginAction2()
 
     data class UserAcceptCertificate(val fingerprint: Fingerprint) : LoginAction2()
+    object RejectCertificate : LoginAction2()
 
     // Account customization is over
     object Finish : LoginAction2()

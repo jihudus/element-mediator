@@ -67,6 +67,13 @@ import org.matrix.android.sdk.api.auth.registration.FlowResult
 import org.matrix.android.sdk.api.auth.registration.Stage
 import org.matrix.android.sdk.api.auth.toLocalizedLoginTerms
 import org.matrix.android.sdk.api.extensions.tryOrNull
+import timber.log.Timber
+
+private fun myLog(msg: String, vararg arg: Any?) {
+    val args = arg.toList()
+    Timber.d("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Login2Variant.kt ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+    Timber.d("$msg : $args")
+}
 
 private const val FRAGMENT_REGISTRATION_STAGE_TAG = "FRAGMENT_REGISTRATION_STAGE_TAG"
 private const val FRAGMENT_LOGIN_TAG = "FRAGMENT_LOGIN_TAG"
@@ -99,6 +106,7 @@ class Login2Variant(
     }
 
     override fun initUiAndData(isFirstCreation: Boolean) {
+        myLog("initUiAndData")
         if (isFirstCreation) {
             addFirstFragment()
         }
@@ -123,8 +131,11 @@ class Login2Variant(
     }
 
     private fun handleLoginViewEvents(event: LoginViewEvents2) {
+        myLog("handleLoginViewEvents", event)
         when (event) {
-            is LoginViewEvents2.RegistrationFlowResult -> {
+            LoginViewEvents2.ResetLoginFlow                                ->
+                supportFragmentManager.popBackStack()
+            is LoginViewEvents2.RegistrationFlowResult                     -> {
                 // Check that all flows are supported by the application
                 if (event.flowResult.missingStages.any { !it.isSupported() }) {
                     // Display a popup to propose use web fallback

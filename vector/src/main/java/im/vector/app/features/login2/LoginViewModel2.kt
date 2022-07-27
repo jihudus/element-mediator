@@ -54,6 +54,12 @@ import org.matrix.android.sdk.api.session.Session
 import timber.log.Timber
 import java.util.concurrent.CancellationException
 
+private fun myLog(msg: String, vararg arg: Any?) {
+    val args = arg.toList()
+    Timber.d("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ LoginViewModel2.kt ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+    Timber.d("$msg : $args")
+}
+
 /**
  *
  */
@@ -114,27 +120,29 @@ class LoginViewModel2 @AssistedInject constructor(
         }
 
     override fun handle(action: LoginAction2) {
+        myLog("handle", action)
         when (action) {
-            is LoginAction2.EnterServerUrl -> handleEnterServerUrl()
-            is LoginAction2.ChooseAServerForSignin -> handleChooseAServerForSignin()
-            is LoginAction2.UpdateSignMode -> handleUpdateSignMode(action)
-            is LoginAction2.InitWith -> handleInitWith(action)
-            is LoginAction2.ChooseDefaultHomeServer -> handle(LoginAction2.UpdateHomeServer(matrixOrgUrl))
-            is LoginAction2.UpdateHomeServer -> handleUpdateHomeserver(action).also { lastAction = action }
-            is LoginAction2.SetUserName -> handleSetUserName(action).also { lastAction = action }
-            is LoginAction2.SetUserPassword -> handleSetUserPassword(action).also { lastAction = action }
-            is LoginAction2.LoginWith -> handleLoginWith(action).also { lastAction = action }
-            is LoginAction2.LoginWithToken -> handleLoginWithToken(action)
-            is LoginAction2.WebLoginSuccess -> handleWebLoginSuccess(action)
-            is LoginAction2.ResetPassword -> handleResetPassword(action)
+            is LoginAction2.RejectCertificate          -> handleRejectCertificate()
+            is LoginAction2.EnterServerUrl             -> handleEnterServerUrl()
+            is LoginAction2.ChooseAServerForSignin     -> handleChooseAServerForSignin()
+            is LoginAction2.UpdateSignMode             -> handleUpdateSignMode(action)
+            is LoginAction2.InitWith                   -> handleInitWith(action)
+            is LoginAction2.ChooseDefaultHomeServer    -> handle(LoginAction2.UpdateHomeServer(matrixOrgUrl))
+            is LoginAction2.UpdateHomeServer           -> handleUpdateHomeserver(action).also { lastAction = action }
+            is LoginAction2.SetUserName                -> handleSetUserName(action).also { lastAction = action }
+            is LoginAction2.SetUserPassword            -> handleSetUserPassword(action).also { lastAction = action }
+            is LoginAction2.LoginWith                  -> handleLoginWith(action).also { lastAction = action }
+            is LoginAction2.LoginWithToken             -> handleLoginWithToken(action)
+            is LoginAction2.WebLoginSuccess            -> handleWebLoginSuccess(action)
+            is LoginAction2.ResetPassword              -> handleResetPassword(action)
             is LoginAction2.ResetPasswordMailConfirmed -> handleResetPasswordMailConfirmed()
-            is LoginAction2.RegisterAction -> handleRegisterAction(action)
-            is LoginAction2.ResetAction -> handleResetAction(action)
+            is LoginAction2.RegisterAction             -> handleRegisterAction(action)
+            is LoginAction2.ResetAction                -> handleResetAction(action)
             is LoginAction2.SetupSsoForSessionRecovery -> handleSetupSsoForSessionRecovery(action)
-            is LoginAction2.UserAcceptCertificate -> handleUserAcceptCertificate(action)
-            LoginAction2.ClearHomeServerHistory -> handleClearHomeServerHistory()
-            is LoginAction2.PostViewEvent -> _viewEvents.post(action.viewEvent)
-            is LoginAction2.Finish -> handleFinish()
+            is LoginAction2.UserAcceptCertificate      -> handleUserAcceptCertificate(action)
+            LoginAction2.ClearHomeServerHistory        -> handleClearHomeServerHistory()
+            is LoginAction2.PostViewEvent              -> _viewEvents.post(action.viewEvent)
+            is LoginAction2.Finish                     -> handleFinish()
         }
     }
 
@@ -146,6 +154,10 @@ class LoginViewModel2 @AssistedInject constructor(
     private fun handleChooseAServerForSignin() {
         // Just post a view Event
         _viewEvents.post(LoginViewEvents2.OpenServerSelection)
+    }
+
+    private fun handleRejectCertificate() {
+        _viewEvents.post(LoginViewEvents2.ResetLoginFlow)
     }
 
     private fun handleUserAcceptCertificate(action: LoginAction2.UserAcceptCertificate) {
@@ -317,6 +329,7 @@ class LoginViewModel2 @AssistedInject constructor(
     private fun handleSetUserNameForSignUp(action: LoginAction2.SetUserName) {
         setState { copy(isLoading = true) }
 
+        myLog("handleSetUserNameForSignUp", registrationWizard)
         val safeRegistrationWizard = registrationWizard ?: error("Invalid")
 
         viewModelScope.launch {
@@ -408,10 +421,16 @@ class LoginViewModel2 @AssistedInject constructor(
         }
 
         when (action.signMode) {
-            SignMode2.SignUp -> _viewEvents.post(LoginViewEvents2.OpenServerSelection)
-            SignMode2.SignIn -> _viewEvents.post(LoginViewEvents2.OpenSignInEnterIdentifierScreen)
+            // Было:
+            // SignMode2.SignUp  -> _viewEvents.post(LoginViewEvents2.OpenServerSelection)
+            // Стало:
+            SignMode2.SignUp  -> _viewEvents.post(LoginViewEvents2.OpenSignUpChooseUsernameScreen)
+            SignMode2.SignIn  -> _viewEvents.post(LoginViewEvents2.OpenSignInWithAnythingScreen)
             SignMode2.Unknown -> Unit
         }
+
+        val url = getInitialHomeServerUrl()
+        handle(LoginAction2.UpdateHomeServer(url!!))
     }
 
     private fun handleEnterServerUrl() {
@@ -420,6 +439,7 @@ class LoginViewModel2 @AssistedInject constructor(
 
     private fun handleInitWith(action: LoginAction2.InitWith) {
         loginConfig = action.loginConfig
+        myLog("handleInitWith", loginConfig)
 
         // If there is a pending email validation continue on this step
         try {
@@ -734,6 +754,7 @@ class LoginViewModel2 @AssistedInject constructor(
 
     private fun getLoginFlow(homeServerConnectionConfig: HomeServerConnectionConfig) = withState { state ->
         currentHomeServerConnectionConfig = homeServerConnectionConfig
+        myLog("getLoginFlow", currentHomeServerConnectionConfig)
 
         setState { copy(isLoading = true) }
 
@@ -744,6 +765,7 @@ class LoginViewModel2 @AssistedInject constructor(
                 authenticationService.getLoginFlow(homeServerConnectionConfig)
             } catch (failure: Throwable) {
                 _viewEvents.post(LoginViewEvents2.Failure(failure))
+                myLog("getLoginFlow", LoginViewEvents2.Failure(failure))
                 setState { copy(isLoading = false) }
                 null
             } ?: return@launch

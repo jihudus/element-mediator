@@ -35,9 +35,16 @@ import im.vector.app.features.login.SocialLoginButtonsView
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import org.matrix.android.sdk.api.auth.data.SsoIdentityProvider
+import org.matrix.android.sdk.api.failure.Failure
 import reactivecircus.flowbinding.android.widget.textChanges
+import timber.log.Timber
 import javax.inject.Inject
+
+private fun myLog(msg: String, vararg arg: Any?) {
+    val args = arg.toList()
+    Timber.d("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ LoginFragmentSignupUsername2.kt ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+    Timber.d("$msg : $args")
+}
 
 /**
  * In this screen:
@@ -55,7 +62,7 @@ class LoginFragmentSignupUsername2 @Inject constructor() : AbstractSSOLoginFragm
 
         setupSubmitButton()
         setupAutoFill()
-        setupSocialLoginButtons()
+//        setupSocialLoginButtons()
     }
 
     private fun setupAutoFill() {
@@ -65,10 +72,11 @@ class LoginFragmentSignupUsername2 @Inject constructor() : AbstractSSOLoginFragm
     }
 
     private fun setupSocialLoginButtons() {
-        views.loginSocialLoginButtons.mode = SocialLoginButtonsView.Mode.MODE_SIGN_UP
+//        views.loginSocialLoginButtons.mode = SocialLoginButtonsView.Mode.MODE_SIGN_UP
     }
 
     private fun submit() {
+        myLog("submit BUTTON clicked")
         cleanupUi()
 
         val login = views.loginField.text.toString().trim()
@@ -93,23 +101,23 @@ class LoginFragmentSignupUsername2 @Inject constructor() : AbstractSSOLoginFragm
     private fun setupUi(state: LoginViewState2) {
         views.loginSubtitle.text = getString(R.string.login_signup_to, state.homeServerUrlFromUser.toReducedUrl())
 
-        if (state.loginMode is LoginMode.SsoAndPassword) {
-            views.loginSocialLoginContainer.isVisible = true
-            views.loginSocialLoginButtons.ssoIdentityProviders = state.loginMode.ssoIdentityProviders?.sorted()
-            views.loginSocialLoginButtons.listener = object : SocialLoginButtonsView.InteractionListener {
-                override fun onProviderSelected(provider: SsoIdentityProvider?) {
-                    loginViewModel.getSsoUrl(
-                            redirectUrl = SSORedirectRouterActivity.VECTOR_REDIRECT_URL,
-                            deviceId = state.deviceId,
-                            providerId = provider?.id
-                    )
-                            ?.let { openInCustomTab(it) }
-                }
-            }
-        } else {
-            views.loginSocialLoginContainer.isVisible = false
-            views.loginSocialLoginButtons.ssoIdentityProviders = null
-        }
+//        if (state.loginMode is LoginMode.SsoAndPassword) {
+//            views.loginSocialLoginContainer.isVisible = true
+//            views.loginSocialLoginButtons.ssoIdentityProviders = state.loginMode.ssoIdentityProviders?.sorted()
+//            views.loginSocialLoginButtons.listener = object : SocialLoginButtonsView.InteractionListener {
+//                override fun onProviderSelected(id: String?) {
+//                    loginViewModel.getSsoUrl(
+//                            redirectUrl = SSORedirectRouterActivity.VECTOR_REDIRECT_URL,
+//                            deviceId = state.deviceId,
+//                            providerId = id
+//                    )
+//                            ?.let { openInCustomTab(it) }
+//                }
+//            }
+//        } else {
+//            views.loginSocialLoginContainer.isVisible = false
+//            views.loginSocialLoginButtons.ssoIdentityProviders = null
+//        }
     }
 
     private fun setupSubmitButton() {
@@ -129,6 +137,10 @@ class LoginFragmentSignupUsername2 @Inject constructor() : AbstractSSOLoginFragm
     }
 
     override fun onError(throwable: Throwable) {
+        if (throwable is Failure.NetworkConnection) {
+            displayErrorDialog(throwable)
+            views.loginFieldTil.isEnabled = false
+        }
         views.loginFieldTil.error = errorFormatter.toHumanReadable(throwable)
     }
 

@@ -27,7 +27,14 @@ import im.vector.app.core.platform.lifecycleAwareLazy
 import im.vector.app.databinding.ActivityLoginBinding
 import im.vector.app.features.login.LoginConfig
 import im.vector.app.features.pin.UnlockedActivity
+import timber.log.Timber
 import javax.inject.Inject
+
+private fun myLog(msg: String, vararg arg: Any?) {
+    val args = arg.toList()
+    Timber.d("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ OnboardingActivity.kt ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+    Timber.d("$msg : $args")
+}
 
 @AndroidEntryPoint
 class OnboardingActivity : VectorBaseActivity<ActivityLoginBinding>(), UnlockedActivity {
@@ -43,6 +50,7 @@ class OnboardingActivity : VectorBaseActivity<ActivityLoginBinding>(), UnlockedA
     override fun getCoordinatorLayout() = views.coordinatorLayout
 
     override fun onNewIntent(intent: Intent?) {
+        myLog("onNewIntent", intent, onboardingVariant)
         super.onNewIntent(intent)
         onboardingVariant.onNewIntent(intent)
     }

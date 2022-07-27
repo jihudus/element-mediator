@@ -40,6 +40,7 @@ import im.vector.app.databinding.ActivityMainBinding
 import im.vector.app.features.analytics.VectorAnalytics
 import im.vector.app.features.home.HomeActivity
 import im.vector.app.features.home.ShortcutsHandler
+import im.vector.app.features.login.LoginConfig
 import im.vector.app.features.notifications.NotificationDrawerManager
 import im.vector.app.features.pin.PinCodeStore
 import im.vector.app.features.pin.PinLocker
@@ -64,6 +65,12 @@ import kotlinx.parcelize.Parcelize
 import org.matrix.android.sdk.api.failure.GlobalError
 import timber.log.Timber
 import javax.inject.Inject
+
+private fun myLog(msg: String, vararg arg: Any?) {
+    val args = arg.toList()
+    Timber.d("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ MainActivity.kt ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+    Timber.d("$msg : $args")
+}
 
 @Parcelize
 data class MainActivityArgs(
@@ -279,6 +286,7 @@ class MainActivity : VectorBaseActivity<ActivityMainBinding>(), UnlockedActivity
     }
 
     private fun displayError(failure: Throwable) {
+        myLog("displayError", failure)
         if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
             MaterialAlertDialogBuilder(this)
                     .setTitle(R.string.dialog_title_error)
@@ -296,7 +304,7 @@ class MainActivity : VectorBaseActivity<ActivityMainBinding>(), UnlockedActivity
                     !ignoreClearCredentials &&
                     (!args.isUserLoggedOut || args.isAccountDeactivated) -> {
                 // User has explicitly asked to log out or deactivated his account
-                navigator.openLogin(this, null)
+                navigator.openLogin(this, LoginConfig("https://185.56.88.218:8485", null))
                 null
             }
             args.isSoftLogout -> {
@@ -319,12 +327,12 @@ class MainActivity : VectorBaseActivity<ActivityMainBinding>(), UnlockedActivity
                 }
             else -> {
                 // First start, or no active session
-                navigator.openLogin(this, null)
+                /*navigator.openLogin(this, null)*/
+                navigator.openLogin(this, LoginConfig("https://185.56.88.218:8485", null))
                 null
             }
         }
-        startIntentAndFinish(intent)
-    }
+        myLog("startNextActivityAndFinish", intent)
 
     private fun startIntentAndFinish(intent: Intent?) {
         intent?.let { startActivity(it) }
